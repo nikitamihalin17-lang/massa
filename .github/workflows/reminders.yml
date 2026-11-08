@@ -1,0 +1,27 @@
+name: Напоминания
+
+on:
+  schedule:
+    # Время в UTC (Москва = UTC+3). Запуск на 10 минут раньше: GitHub часто запаздывает.
+    - cron: '50 4 * * *'      # 08:00 завтрак
+    - cron: '50 9 * * *'      # 13:00 перекус
+    - cron: '50 12 * * *'     # 16:00 обед
+    - cron: '20 14 * * 1,3,5' # 17:30 тренировка (пн, ср, пт)
+    - cron: '50 15 * * *'     # 19:00 полдник
+    - cron: '20 18 * * *'     # 21:30 ужин
+    - cron: '50 20 * * *'     # 00:00 перед сном
+  workflow_dispatch:          # кнопка «Run workflow» для ручной проверки
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node reminders.mjs
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          APP_URL: ${{ vars.APP_URL }}
