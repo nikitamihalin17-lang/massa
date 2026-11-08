@@ -37,10 +37,16 @@ const ev = events
   .filter(e => e.diff <= 60)
   .sort((a, b) => a.diff - b.diff)[0];
 
-if (!ev) { console.log('Сейчас нет напоминаний'); process.exit(0); }
+const manual = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
+if (!ev && !manual) { console.log('Сейчас нет напоминаний'); process.exit(0); }
 
 let text;
-if (ev.type === 'meal') {
+if (!ev) {
+  // Ручной запуск вне времени еды — пробное сообщение
+  const next = events.filter(e => e.at > minutes).sort((a, b) => a.at - b.at)[0];
+  const nextT = next ? (next.type === 'meal' ? D.SLOTS[next.i].t : '17:30') : D.SLOTS[0].t;
+  text = `✅ <b>Бот работает!</b>\nНапоминания включены. Следующее — в ${nextT}.`;
+} else if (ev.type === 'meal') {
   const plan = D.PLANS[D.PLAN_BY_DOW[dow]];
   const slot = D.SLOTS[ev.i];
   const meal = D.MEALS[plan.meals[ev.i]];
