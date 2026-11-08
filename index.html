@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Набор массы</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
+  --card: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #ffffff));
+  --text: var(--tg-theme-text-color, #111111);
+  --hint: var(--tg-theme-hint-color, #8e8e93);
+  --line: rgba(127,127,127,.18);
+  --accent: #1f9d62;
+  --accent-soft: rgba(31,157,98,.13);
+  --warn: #e8912d;
+  --warn-soft: rgba(232,145,45,.14);
+  --r: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg)}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--text);font-size:15px;line-height:1.4;padding:12px 12px calc(84px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:var(--text)}
+h1{font-size:22px;font-weight:700;letter-spacing:-.2px}
+h2{font-size:17px;font-weight:650;margin:18px 4px 8px}
+.hint{color:var(--hint);font-size:13px}
+.card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.btn{background:var(--accent);color:#fff;border-radius:12px;padding:11px 14px;font-weight:600;text-align:center}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn.small{padding:7px 11px;font-size:14px;border-radius:10px}
+
+/* header */
+.daynav{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 12px}
+.daynav button{width:38px;height:38px;border-radius:12px;background:var(--card);font-size:18px}
+.daynav .center{text-align:center}
+
+/* progress */
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.stat b{font-size:20px;font-weight:700}
+
+/* meal card */
+.meal{padding:0;overflow:hidden}
+.meal .top{display:flex;gap:12px;padding:14px;align-items:flex-start}
+.check{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;transition:.15s;margin-top:2px}
+.check svg{width:16px;height:16px;opacity:0;stroke:#fff}
+.done .check{background:var(--accent);border-color:var(--accent)}
+.done .check svg{opacity:1}
+.done .mname{text-decoration:line-through;color:var(--hint)}
+.mtime{font-size:13px;color:var(--hint);font-weight:600}
+.mname{font-weight:600;font-size:16px;margin:1px 0 3px}
+.next{box-shadow:0 0 0 2px var(--accent) inset}
+details{border-top:1px solid var(--line)}
+summary{list-style:none;padding:11px 14px;color:var(--accent);font-weight:600;font-size:14px;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+details[open] summary{padding-bottom:6px}
+.recipe{padding:0 14px 14px}
+.ing{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.ing:last-child{border-bottom:0}
+ol.steps{padding-left:20px;margin-top:10px}
+ol.steps li{margin:6px 0;font-size:14px}
+.tip{background:var(--warn-soft);border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+
+/* shopping */
+.shop-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.shop-item:last-child{border-bottom:0}
+.shop-item .check{width:24px;height:24px;margin:0}
+.shop-item.done .sname{text-decoration:line-through;color:var(--hint)}
+.shop-item.done .check{background:var(--accent);border-color:var(--accent)}
+.shop-item.done .check svg{opacity:1}
+.qty{font-weight:600;white-space:nowrap}
+
+/* workout */
+.ex{padding:12px 0;border-bottom:1px solid var(--line)}
+.ex:last-child{border-bottom:0}
+.sets{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.set{width:38px;height:38px;border-radius:12px;background:var(--line);font-weight:700;font-size:14px}
+.set.on{background:var(--accent);color:#fff}
+
+/* weight */
+.wform{display:flex;gap:8px}
+.wform input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:17px}
+.field{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.field:last-child{border-bottom:0}
+.field input{width:80px;text-align:right;padding:6px 8px;border-radius:9px;border:1px solid var(--line);background:var(--bg)}
+.seg{display:flex;background:var(--bg);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;padding:7px 4px;border-radius:9px;font-size:13px;font-weight:600;color:var(--hint)}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+svg.chart{width:100%;height:180px;display:block}
+
+/* tabbar */
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:10}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--hint);padding:4px 0}
+nav button span{font-size:21px;line-height:1}
+nav button.on{color:var(--accent);font-weight:600}
+
+/* timer toast */
+#timer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom));background:var(--text);color:var(--card);padding:10px 16px;border-radius:99px;font-weight:700;display:none;z-index:20;gap:12px;align-items:center}
+#timer.show{display:flex}
+#timer button{color:var(--card);opacity:.7;font-size:13px}
+.empty{text-align:center;color:var(--hint);padding:20px 0}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="timer"><span id="timerText">1:30</span><button id="timerStop">стоп</button></div>
+<nav id="nav"></nav>
+
+<script src="menu.js"></script>
+<script>
+/* ================== TELEGRAM + ХРАНИЛИЩЕ ================== */
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+const hasCloud = !!(tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('6.9'));
+function haptic(type){ try{ tg.HapticFeedback.impactOccurred(type||'light'); }catch(e){} }
+function hapticDone(){ try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){} }
+
+const S = {
+  get(k, def){ try{ const v = localStorage.getItem(k); return v==null ? def : JSON.parse(v); }catch(e){ return def; } },
+  set(k, v){
+    const s = JSON.stringify(v);
+    try{ localStorage.setItem(k, s); }catch(e){}
+    if (hasCloud) { try{ tg.CloudStorage.setItem(k, s, ()=>{}); }catch(e){} }
+  },
+  del(k){
+    try{ localStorage.removeItem(k); }catch(e){}
+    if (hasCloud) { try{ tg.CloudStorage.removeItem(k, ()=>{}); }catch(e){} }
+  }
+};
+
+// Подтягиваем данные из облака Telegram (синхронизация между телефоном и компьютером)
+function syncFromCloud(){
+  if (!hasCloud) return;
+  tg.CloudStorage.getKeys((err, keys)=>{
+    if (err || !keys || !keys.length) return;
+    // чистим старые дни (старше 60 дней)
+    const limit = key(addDays(logicalToday(), -60));
+    const old = keys.filter(k => k.startsWith('d_') && k.slice(2) < limit);
+    if (old.length) tg.CloudStorage.removeItems(old, ()=>{});
+    const fresh = keys.filter(k => !old.includes(k));
+    tg.CloudStorage.getItems(fresh, (e, vals)=>{
+      if (e || !vals) return;
+      Object.keys(vals).forEach(k => { if (vals[k]) try{ localStorage.setItem(k, vals[k]); }catch(x){} });
+      render();
+    });
+  });
+}
+
+/* ================== УТИЛИТЫ ================== */
+// «Логический» день начинается в 4 утра: приём пищи в 00:00 относится к прошедшему дню
+function logicalToday(){ const d = new Date(Date.now() - 4*3600e3); d.setHours(12,0,0,0); return d; }
+function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function key(d){ return d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0'); }
+function isoDate(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+const DOW = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+const MON = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+function fmtDate(d){ return d.getDate()+' '+MON[d.getMonth()]; }
+function num(x, dec){ return Number(x).toLocaleString('ru-RU', {maximumFractionDigits: dec==null?0:dec, minimumFractionDigits: 0}); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+function profile(){
+  return Object.assign({start:54, height:175, goal:62, portion:'start'}, S.get('profile', {}));
+}
+function factor(){ const p = PORTIONS.find(x => x.id === profile().portion); return p ? p.f : 1; }
+
+function scaledAmount(id, amt, f){
+  const it = ING[id];
+  if (it.u === 'шт') return Math.max(1, Math.round(amt * f));
+  return Math.max(5, Math.round(amt * f / 5) * 5);
+}
+function grams(id, a){ const it = ING[id]; return it.u === 'шт' ? a * it.g : a; }
+function mealInfo(mid, f){
+  const m = MEALS[mid]; let k = 0, p = 0;
+  const ing = m.ing.map(([id, amt]) => {
+    const a = scaledAmount(id, amt, f); const g = grams(id, a);
+    k += g * ING[id].k / 100; p += g * ING[id].p / 100;
+    return {id, a};
+  });
+  return {k: Math.round(k), p: Math.round(p), ing};
+}
+function dayTotals(planId, f){
+  return PLANS[planId].meals.reduce((s, mid) => { const i = mealInfo(mid, f); s.k += i.k; s.p += i.p; return s; }, {k:0, p:0});
+}
+function amtLabel(id, a){ const u = ING[id].u; return a + ' ' + u; }
+
+/* ================== СОСТОЯНИЕ ================== */
+const state = { tab: 'today', off: 0 };
+function dayState(k){ return S.get('d_'+k, {m:[], w:null, sets:{}}); }
+function saveDay(k, st){ S.set('d_'+k, st); }
+
+/* ================== ЭКРАН «СЕГОДНЯ» ================== */
+function recipeBlock(mid, info){
+  const m = MEALS[mid];
+  return `<div class="recipe">
+    ${info.ing.map(x => `<div class="ing"><span>${esc(ING[x.id].n)}</span><span class="qty">${amtLabel(x.id, x.a)}</span></div>`).join('')}
+    <ol class="steps">${m.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    ${m.tip ? `<div class="tip">💡 ${esc(m.tip)}</div>` : ''}
+  </div>`;
+}
+
+function renderToday(){
+  const d = addDays(logicalToday(), state.off);
+  const k = key(d), st = dayState(k), f = factor();
+  const planId = PLAN_BY_DOW[d.getDay()], plan = PLANS[planId];
+  const total = dayTotals(planId, f);
+  let eatenK = 0, eatenP = 0;
+  const infos = plan.meals.map(mid => mealInfo(mid, f));
+  infos.forEach((i, idx) => { if (st.m.includes(idx)) { eatenK += i.k; eatenP += i.p; } });
+  const nextIdx = state.off === 0 ? plan.meals.findIndex((_, i) => !st.m.includes(i)) : -1;
+  const label = state.off === 0 ? 'Сегодня' : state.off === 1 ? 'Завтра' : state.off === -1 ? 'Вчера' : DOW[d.getDay()][0].toUpperCase() + DOW[d.getDay()].slice(1);
+  const wid = WORKOUT_BY_DOW[d.getDay()];
+  const pct = Math.min(100, Math.round(eatenK / total.k * 100));
+
+  let html = `
+  <div class="daynav">
+    <button data-act="prev">‹</button>
+    <div class="center"><h1>${label}</h1><div class="hint">${DOW[d.getDay()]}, ${fmtDate(d)} · ${plan.title}</div></div>
+    <button data-act="next">›</button>
+  </div>
+  <div class="card">
+    <div class="row between"><b>Съедено за день</b><span class="pill${pct>=100?'':' warn'}">${pct}%</span></div>
+    <div class="bar" style="margin:10px 0 12px"><i style="width:${pct}%"></i></div>
+    <div class="stats">
+      <div class="stat"><b>${num(eatenK)}</b> <span class="hint">/ ${num(total.k)} ккал</span></div>
+      <div class="stat"><b>${num(eatenP)}</b> <span class="hint">/ ${num(total.p)} г белка</span></div>
+    </div>
+  </div>`;
+
+  plan.meals.forEach((mid, idx) => {
+    const m = MEALS[mid], i = infos[idx], done = st.m.includes(idx);
+    html += `
+    <div class="card meal ${done?'done':''} ${idx===nextIdx?'next':''}">
+      <div class="top" data-act="meal" data-i="${idx}">
+        <div class="check">${CHECK_SVG}</div>
+        <div class="grow">
+          <div class="mtime">${SLOTS[idx].t} · ${SLOTS[idx].l}${idx===nextIdx?' · <span style="color:var(--accent)">следующий</span>':''}</div>
+          <div class="mname">${esc(m.name)}</div>
+          <div class="hint">${num(i.k)} ккал · ${num(i.p)} г белка · ${m.min} мин</div>
+        </div>
+      </div>
+      <details><summary>Рецепт и продукты</summary>${recipeBlock(mid, i)}</details>
+    </div>`;
+  });
+
+  if (wid) {
+    const w = WORKOUTS[wid];
+    html += `<div class="card ${st.w?'done':''}">
+      <div class="row">
+        <div class="grow"><div class="mtime">Тренировка · ~30 мин</div><div class="mname">💪 ${esc(w.title)}</div>
+        <div class="hint">${st.w ? 'Выполнено' : 'Лучше всего между обедом и ужином'}</div></div>
+        <button class="btn small ghost" data-act="gotoWorkout">Открыть</button>
+      </div></div>`;
+  } else {
+    html += `<div class="card"><div class="hint">🛌 Сегодня отдых от тренировок — мышцы растут, пока ты восстанавливаешься.</div></div>`;
+  }
+
+  html += `<h2>Как есть больше при маленьком аппетите</h2><div class="card">
+    ${TIPS.map(t => `<div style="padding:6px 0;font-size:14px">• ${esc(t)}</div>`).join('')}
+  </div>`;
+  return html;
+}
+
+/* ================== ЭКРАН «ПОКУПКИ» ================== */
+function fmtQty(id, total){
+  const u = ING[id].u;
+  if (u === 'шт') {
+    if (id === 'egg') return `${Math.ceil(total)} шт (≈ ${Math.ceil(total/10)} уп. по 10)`;
+    return `${Math.ceil(total)} шт`;
+  }
+  if (u === 'мл') {
+    if (total >= 1000) return `${num(Math.ceil(total/500)*0.5, 1)} л`;
+    return `${Math.ceil(total/50)*50} мл`;
+  }
+  if (total >= 1000) return `${num(Math.ceil(total/100)/10, 1)} кг`;
+  return `${Math.ceil(total/50)*50} г`;
+}
+
+function renderShop(){
+  const f = factor(), start = logicalToday(), totals = {};
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(start, i);
+    PLANS[PLAN_BY_DOW[d.getDay()]].meals.forEach(mid => {
+      mealInfo(mid, f).ing.forEach(x => { totals[x.id] = (totals[x.id] || 0) + x.a; });
+    });
+  }
+  const checked = S.get('shop', []);
+  const cats = {};
+  Object.keys(totals).forEach(id => { (cats[ING[id].cat] = cats[ING[id].cat] || []).push(id); });
+  const order = ['Мясо','Молочное и яйца','Крупы, хлеб, макароны','Фрукты, орехи, картофель','Прочее'];
+  let left = Object.keys(totals).filter(id => !checked.includes(id)).length;
+
+  let html = `<div class="daynav" style="justify-content:flex-start"><div><h1>Покупки на неделю</h1>
+    <div class="hint">${fmtDate(start)} — ${fmtDate(addDays(start,6))} · осталось купить: ${left}</div></div></div>
+    <div class="card"><div style="font-size:14px">🧊 Курицу и фарш раздели на порции и заморозь. Вечером накануне доставай порцию в холодильник.</div>
+    <div style="font-size:14px;margin-top:8px">🍚 Раз в 2–3 дня вари гречку и рис сразу на несколько приёмов.</div></div>`;
+  order.forEach(cat => {
+    if (!cats[cat]) return;
+    html += `<h2>${cat}</h2><div class="card" style="padding:4px 14px">`;
+    cats[cat].forEach(id => {
+      const done = checked.includes(id);
+      html += `<div class="shop-item ${done?'done':''}" data-act="shop" data-id="${id}">
+        <div class="check">${CHECK_SVG}</div>
+        <div class="grow sname">${esc(ING[id].n)}</div>
+        <div class="qty">${fmtQty(id, totals[id])}</div></div>`;
+    });
+    html += `</div>`;
+  });
+  html += `<button class="btn ghost" style="width:100%;margin-top:10px" data-act="shopReset">Сбросить отметки</button>`;
+  return html;
+}
+
+/* ================== ЭКРАН «РЕЦЕПТЫ» ================== */
+function renderRecipes(){
+  const f = factor();
+  let html = `<div class="daynav" style="justify-content:flex-start"><div><h1>Рецепты</h1><div class="hint">Все блюда без лука и помидоров, до 15 минут (кроме пюре и сырников)</div></div></div>`;
+  ['A','B','C'].forEach(pid => {
+    const t = dayTotals(pid, f);
+    html += `<h2>${PLANS[pid].title} <span class="hint" style="font-weight:400">· ${num(t.k)} ккал · ${num(t.p)} г белка</span></h2>`;
+    PLANS[pid].meals.forEach((mid, idx) => {
+      const m = MEALS[mid], i = mealInfo(mid, f);
+      html += `<div class="card meal"><div class="top"><div class="grow">
+        <div class="mtime">${SLOTS[idx].l} · ${m.min} мин</div><div class="mname">${esc(m.name)}</div>
+        <div class="hint">${num(i.k)} ккал · ${num(i.p)} г белка</div></div></div>
+        <details><summary>Открыть рецепт</summary>${recipeBlock(mid, i)}</details></div>`;
+    });
+  });
+  html += `<div class="hint" style="margin:10px 4px">Расписание: Пн, Чт — день А; Вт, Пт, Вс — день Б; Ср, Сб — день В.</div>`;
+  return html;
+}
+
+/* ================== ЭКРАН «СПОРТ» ================== */
+function renderWorkout(){
+  const today = logicalToday(), k = key(today), st = dayState(k);
+  const todayW = WORKOUT_BY_DOW[today.getDay()];
+  let html = `<div class="daynav" style="justify-content:flex-start"><div><h1>Тренировки</h1>
+    <div class="hint">3 раза в неделю дома: турник и свой вес</div></div></div>
+    <div class="card" style="font-size:14px">
+      <div>• Перед тренировкой разомнись 5 минут: вращения руками, наклоны, 20 приседаний, вис на турнике.</div>
+      <div style="margin-top:6px">• Отдыхай между подходами 1,5–2 минуты: нажми на номер подхода, и запустится таймер.</div>
+      <div style="margin-top:6px">• Каждую неделю добавляй хотя бы 1 повтор. Стало легко — бери рюкзак с весом.</div>
+      <div style="margin-top:6px">• Не увлекайся бегом и кардио: тебе нужно сохранять калории для набора.</div>
+      <div style="margin-top:6px">• После тренировки в течение часа поешь или выпей стакан молока или кефира.</div>
+    </div>`;
+  ['w1','w2','w3'].forEach(wid => {
+    const w = WORKOUTS[wid], isToday = wid === todayW, done = st.w === wid;
+    html += `<h2>${w.day}: ${esc(w.title)} ${isToday?'<span class="pill">сегодня</span>':''} ${done?'<span class="pill">✓ сделано</span>':''}</h2>
+      <div class="card" style="padding-top:2px;padding-bottom:6px">`;
+    w.ex.forEach((e, ei) => {
+      const doneSets = (st.sets || {})[wid+'_'+ei] || 0;
+      let sets = '';
+      for (let s = 1; s <= e.sets; s++) sets += `<button class="set ${s<=doneSets?'on':''}" data-act="set" data-w="${wid}" data-e="${ei}" data-s="${s}">${s}</button>`;
+      html += `<div class="ex"><div class="row between"><b>${esc(e.n)}</b><span class="hint">${e.sets} × ${esc(e.reps)}</span></div>
+        <div class="hint" style="margin-top:3px">${esc(e.d)}</div><div class="sets">${sets}</div></div>`;
+    });
+    html += `<div style="padding:8px 0 8px"><button class="btn ${done?'ghost':''}" style="width:100%" data-act="wdone" data-w="${wid}">${done?'Отменить отметку':'Тренировка выполнена'}</button></div></div>`;
+  });
+  return html;
+}
+
+/* ================== ЭКРАН «ВЕС» ================== */
+function chartSvg(list, goal){
+  if (list.length < 2) return `<div class="empty">График появится после двух взвешиваний</div>`;
+  const W = 340, H = 180, pl = 34, pr = 10, pt = 12, pb = 24;
+  const t0 = new Date(list[0].d).getTime(), t1 = new Date(list[list.length-1].d).getTime() || t0 + 1;
+  const ws = list.map(x => x.w).concat([goal]);
+  const min = Math.floor(Math.min(...ws) - 1), max = Math.ceil(Math.max(...ws) + 1);
+  const X = t => pl + (t1 === t0 ? 0 : (t - t0) / (t1 - t0)) * (W - pl - pr);
+  const Y = w => pt + (max - w) / (max - min) * (H - pt - pb);
+  const pts = list.map(x => `${X(new Date(x.d).getTime()).toFixed(1)},${Y(x.w).toFixed(1)}`).join(' ');
+  let grid = '';
+  const step = Math.max(1, Math.round((max - min) / 4));
+  for (let v = min; v <= max; v += step) grid += `<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="var(--hint)">${v}</text>`;
+  const fd = s => { const d = new Date(s); return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0'); };
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}
+    <line x1="${pl}" x2="${W-pr}" y1="${Y(goal)}" y2="${Y(goal)}" stroke="var(--warn)" stroke-dasharray="5 4"/>
+    <text x="${W-pr}" y="${Y(goal)-4}" font-size="10" text-anchor="end" fill="var(--warn)">цель ${num(goal,1)}</text>
+    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${list.map(x => `<circle cx="${X(new Date(x.d).getTime())}" cy="${Y(x.w)}" r="3.5" fill="var(--accent)"/>`).join('')}
+    <text x="${pl}" y="${H-6}" font-size="10" fill="var(--hint)">${fd(list[0].d)}</text>
+    <text x="${W-pr}" y="${H-6}" font-size="10" text-anchor="end" fill="var(--hint)">${fd(list[list.length-1].d)}</text>
+  </svg>`;
+}
+
+function renderWeight(){
+  const pr = profile(), list = S.get('weights', []).slice().sort((a,b) => a.d < b.d ? -1 : 1);
+  const all = list.length ? list : [];
+  const cur = all.length ? all[all.length-1].w : pr.start;
+  const diff = cur - pr.start;
+  let rate = null;
+  if (all.length >= 2) {
+    const days = (new Date(all[all.length-1].d) - new Date(all[0].d)) / 864e5;
+    if (days >= 6) rate = (all[all.length-1].w - all[0].w) / days * 7;
+  }
+  const bmi = cur / Math.pow(pr.height/100, 2);
+  const f = factor();
+  const avgK = Math.round(['A','B','C'].reduce((s,p) => s + dayTotals(p, f).k, 0) / 3);
+
+  let rateText = 'Нужно минимум 2 взвешивания с разницей в неделю';
+  if (rate !== null) {
+    if (rate < 0.15) rateText = `${rate>=0?'+':''}${num(rate,2)} кг/нед — медленно. Если так 2 недели подряд, увеличь порции.`;
+    else if (rate > 0.7) rateText = `+${num(rate,2)} кг/нед — быстро. Можно чуть снизить порции, чтобы росли мышцы, а не жир.`;
+    else rateText = `+${num(rate,2)} кг/нед — отличный темп 👍`;
+  }
+
+  let html = `<div class="daynav" style="justify-content:flex-start"><div><h1>Вес</h1><div class="hint">Взвешивайся раз в неделю утром натощак</div></div></div>
+  <div class="card">
+    <div class="wform"><input id="wInput" type="number" inputmode="decimal" step="0.1" placeholder="Вес сегодня, кг"><button class="btn" data-act="wsave">Записать</button></div>
+  </div>
+  <div class="card">
+    <div class="stats">
+      <div class="stat"><div class="hint">Сейчас</div><b>${num(cur,1)} кг</b></div>
+      <div class="stat"><div class="hint">С начала</div><b style="color:${diff>=0?'var(--accent)':'var(--warn)'}">${diff>=0?'+':''}${num(diff,1)} кг</b></div>
+      <div class="stat"><div class="hint">До цели</div><b>${num(Math.max(0, pr.goal-cur),1)} кг</b></div>
+      <div class="stat"><div class="hint">ИМТ</div><b>${num(bmi,1)}</b> <span class="hint">${bmi<18.5?'ниже нормы':'норма'}</span></div>
+    </div>
+    <div class="tip" style="margin-top:12px">📈 ${rateText}</div>
+  </div>
+  <div class="card">${chartSvg(all, pr.goal)}</div>`;
+
+  if (all.length) {
+    html += `<h2>История</h2><div class="card" style="padding:4px 14px">` +
+      all.slice().reverse().map(x => `<div class="field"><span>${fmtDate(new Date(x.d))}</span><span class="row"><b>${num(x.w,1)} кг</b><button class="hint" data-act="wdel" data-d="${x.d}" style="padding:2px 6px">✕</button></span></div>`).join('') +
+      `</div>`;
+  }
+
+  html += `<h2>Настройки</h2><div class="card">
+    <div style="margin-bottom:8px"><b>Размер порций</b><div class="hint">Сейчас в среднем ≈ ${num(avgK)} ккал в день</div></div>
+    <div class="seg">${PORTIONS.map(p => `<button class="${pr.portion===p.id?'on':''}" data-act="portion" data-p="${p.id}">${p.label}</button>`).join('')}</div>
+    <div style="margin-top:10px">
+      <div class="field"><span>Рост, см</span><input type="number" inputmode="decimal" data-prof="height" value="${pr.height}"></div>
+      <div class="field"><span>Стартовый вес, кг</span><input type="number" inputmode="decimal" step="0.1" data-prof="start" value="${pr.start}"></div>
+      <div class="field"><span>Цель, кг</span><input type="number" inputmode="decimal" step="0.1" data-prof="goal" value="${pr.goal}"></div>
+    </div>
+  </div>
+  <div class="hint" style="margin:6px 4px 0">Если вес совсем не растёт даже при полном выполнении плана, один раз сходи к терапевту и сдай базовые анализы (щитовидка, ЖКТ).</div>`;
+  return html;
+}
+
+/* ================== РЕНДЕР И СОБЫТИЯ ================== */
+const TABS = [
+  {id:'today',   icon:'🍽', label:'Сегодня'},
+  {id:'shop',    icon:'🛒', label:'Покупки'},
+  {id:'recipes', icon:'📖', label:'Рецепты'},
+  {id:'workout', icon:'💪', label:'Спорт'},
+  {id:'weight',  icon:'⚖️', label:'Вес'},
+];
+function render(){
+  const app = document.getElementById('app');
+  const views = {today:renderToday, shop:renderShop, recipes:renderRecipes, workout:renderWorkout, weight:renderWeight};
+  // сохраняем раскрытые рецепты
+  const open = [...app.querySelectorAll('details[open]')].map(d => [...app.querySelectorAll('details')].indexOf(d));
+  app.innerHTML = views[state.tab]();
+  const det = app.querySelectorAll('details');
+  open.forEach(i => { if (det[i]) det[i].open = true; });
+  document.getElementById('nav').innerHTML = TABS.map(t => `<button class="${state.tab===t.id?'on':''}" data-tab="${t.id}"><span>${t.icon}</span>${t.label}</button>`).join('');
+}
+
+document.getElementById('nav').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  if (state.tab !== b.dataset.tab) { state.tab = b.dataset.tab; render(); window.scrollTo(0,0); haptic('light'); }
+});
+
+document.getElementById('app').addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const act = el.dataset.act;
+  if (act === 'prev' || act === 'next') { state.off += act === 'prev' ? -1 : 1; render(); haptic('light'); return; }
+  if (act === 'meal') {
+    const k = key(addDays(logicalToday(), state.off)), st = dayState(k), i = +el.dataset.i;
+    st.m = st.m.includes(i) ? st.m.filter(x => x !== i) : st.m.concat(i);
+    saveDay(k, st);
+    if (st.m.length === SLOTS.length) hapticDone(); else haptic('medium');
+    render(); return;
+  }
+  if (act === 'gotoWorkout') { state.tab = 'workout'; render(); window.scrollTo(0,0); return; }
+  if (act === 'shop') {
+    let c = S.get('shop', []); const id = el.dataset.id;
+    c = c.includes(id) ? c.filter(x => x !== id) : c.concat(id);
+    S.set('shop', c); haptic('light'); render(); return;
+  }
+  if (act === 'shopReset') { S.set('shop', []); render(); return; }
+  if (act === 'set') {
+    const k = key(logicalToday()), st = dayState(k); st.sets = st.sets || {};
+    const id = el.dataset.w + '_' + el.dataset.e, s = +el.dataset.s;
+    const cur = st.sets[id] || 0;
+    st.sets[id] = cur >= s ? s - 1 : s;
+    saveDay(k, st); haptic('medium'); render();
+    if (st.sets[id] >= s) startTimer(90);
+    return;
+  }
+  if (act === 'wdone') {
+    const k = key(logicalToday()), st = dayState(k), w = el.dataset.w;
+    st.w = st.w === w ? null : w; saveDay(k, st);
+    if (st.w) hapticDone(); render(); return;
+  }
+  if (act === 'wsave') {
+    const inp = document.getElementById('wInput');
+    const v = parseFloat(String(inp.value).replace(',', '.'));
+    if (!(v > 30 && v < 200)) { inp.focus(); return; }
+    const d = isoDate(logicalToday());
+    const list = S.get('weights', []).filter(x => x.d !== d);
+    list.push({d, w: Math.round(v*10)/10});
+    S.set('weights', list); hapticDone(); render(); return;
+  }
+  if (act === 'wdel') { S.set('weights', S.get('weights', []).filter(x => x.d !== el.dataset.d)); render(); return; }
+  if (act === 'portion') { const p = profile(); p.portion = el.dataset.p; S.set('profile', p); haptic('light'); render(); return; }
+});
+
+document.getElementById('app').addEventListener('change', e => {
+  const f = e.target.dataset.prof; if (!f) return;
+  const v = parseFloat(String(e.target.value).replace(',', '.')); if (!(v > 0)) return;
+  const p = profile(); p[f] = v; S.set('profile', p); render();
+});
+
+/* ================== ТАЙМЕР ОТДЫХА ================== */
+let timerId = null;
+function startTimer(sec){
+  clearInterval(timerId);
+  const box = document.getElementById('timer'), txt = document.getElementById('timerText');
+  let left = sec; box.classList.add('show');
+  const show = () => { txt.textContent = 'Отдых ' + Math.floor(left/60) + ':' + String(left%60).padStart(2,'0'); };
+  show();
+  timerId = setInterval(() => {
+    left--; show();
+    if (left <= 0) { clearInterval(timerId); txt.textContent = 'Следующий подход!'; hapticDone(); setTimeout(() => box.classList.remove('show'), 2500); }
+  }, 1000);
+}
+document.getElementById('timerStop').addEventListener('click', () => { clearInterval(timerId); document.getElementById('timer').classList.remove('show'); });
+
+render();
+syncFromCloud();
+</script>
+</body>
+</html>
