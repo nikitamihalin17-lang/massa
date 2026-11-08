@@ -24,6 +24,9 @@ const tomorrowDow = (dow + 1) % 7;
 let minutes = nowMsk.getUTCHours() * 60 + nowMsk.getUTCMinutes();
 if (minutes < 240) minutes += 1440;
 
+// Старт программы — понедельник 9 ноября 2026: до этого бот молчит
+if (logical.toISOString().slice(0, 10) < '2026-11-09' && process.env.GITHUB_EVENT_NAME !== 'workflow_dispatch') { console.log('Программа начнётся 9 ноября'); process.exit(0); }
+
 // Список событий за день (минуты от полуночи; 00:00 = 1440)
 const events = D.SLOTS.map((s, i) => {
   const [h, m] = s.t.split(':').map(Number);

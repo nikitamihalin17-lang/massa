@@ -285,7 +285,7 @@ function fmtQty(id, total){
 }
 
 function renderShop(){
-  const f = factor(), start = logicalToday(), totals = {};
+  const f = factor(), today = logicalToday(), start = today.getDay() === 0 ? addDays(today, 1) : today, totals = {};
   for (let i = 0; i < 7; i++) {
     const d = addDays(start, i);
     PLANS[PLAN_BY_DOW[d.getDay()]].meals.forEach(mid => {
